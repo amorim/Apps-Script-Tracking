@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <title>Front</title>
+     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+     <link rel="stylesheet" href="https://bootswatch.com/4/darkly/bootstrap.min.css">
+     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+     <script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script>
+function addItem(item) {
+    var html = "";
+    var accordion = document.getElementById("accordion");
+    var qt = accordion.getElementsByTagName("div").length + 1;
+    html += '<div class="card" data-id="' + item.id + '"><div class="card-header" style="display: flex; flex-direction: row; align-items: center;"  id="heading' + qt + '"><div style="overflow-x: hidden; flex: 1;"><h5 class="mb-0"><button class="btn btn-link" data-toggle="collapse" data-target="#collapse' + qt + '" aria-expanded="true" aria-controls="collapseOne">';
+    html += item.name + " / " + item.lastStatus;
+    html += '</button></h5></div><div style="cursor: pointer; padding-left: 10px;" onclick="deleteItem(\'' + item.id + '\')"><i class="far fa-trash-alt"></i></div></div><div id="collapse' + qt + '" class="collapse" aria-labelledby="heading' + qt + '" data-parent="#accordion"><div class="card-body">';
+    html += '<table class="table"><thead><tr><th scope="col">Date</th><th scope="col">Status</th></tr></thead>';
+    html += '<tbody>';
+    for (var i = 0; i < item.tracking.length; i++) {
+        var line = item.tracking[i];
+        html += "<tr>";
+        html += "<td>" + line.date + "</td><td>" + line.status + "</td>"
+        html += "</tr>";
+    }
+    html += "</tbody></table>";
+    html += "</div></div></div>";
+    var accordion = document.getElementById("accordion");
+    if (qt == 1)
+      accordion.innerHTML = "";
+    accordion.innerHTML += html;
+}
+
+function loadData() {
+    var data = google.script.run.withSuccessHandler(loadFinished).loadAllItems();
+}
+
+function deleteItem(itemid) {
+  google.script.run.withSuccessHandler(onDeletionCompleted).deleteItem(itemid);
+}
+
+function onDeletionCompleted(itemid) {
+  if (!itemid) {
+    alert('An error has ocurred while trying to delete this record');
+    return;
+  }
+  $('[data-id="'+ itemid +'"]').remove();
+  if (!$('[data-id]').length) {
+    $('#accordion').html("No items");
+  }
+}
+
+function loadFinished(data) {
+  if (!data) {
+    var accordion = document.getElementById("accordion");
+    accordion.innerHTML = "No items";
+    return;
+  }
+for (var i = 0; i < data.length; i++) {
+        addItem(data[i]);
+    }
+}
+
+function onAdditionSuccess(item) {
+    document.getElementById("addButton").firstChild.data = "Add";
+    document.getElementById("addButton").disabled = false;
+    if (!item) {
+        alert('Favor verificar os dados preenchidos');
+        return;
+    }
+    document.getElementById("itemdescription").value = "";
+    document.getElementById("itemurl").value = "";
+    addItem(item);
+}
+
+function add() {
+    document.getElementById("addButton").firstChild.data = "Wait...";
+    document.getElementById("addButton").disabled = true;
+    google.script.run.withSuccessHandler(onAdditionSuccess).addNewItem(document.getElementById("itemdescription").value, document.getElementById("itemurl").value);
+}
+</script>
+
+
+
+  </head>
+  <body style="margin: 10px;" onload="loadData()">
+  <div class="container">
+  <h1>Rastro Front</h1>
+  <div class="card">
+  <div class="card-header">
+                Add item for tracking
+  </div>
+  <div class="card-body">
+  <input id="itemdescription" class="form-control" placeholder="Item description">
+  <div style="margin-top: 10px" class="input-group mb-3">
+  <input id="itemurl" type="text" class="form-control" placeholder="Tracking URL" aria-label="Tracking URL" aria-describedby="basic-addon2">
+  <div class="input-group-append">
+    <button id="addButton" class="btn btn-primary" type="button" onclick="add()">Add</button>
+  </div>
+</div>
+  </div>
+  </div>
+  
+  
+  
+  
+   <div class="card" style="margin-top: 20px;">
+  <div class="card-header">
+                Items currently being tracked
+  </div>
+  <div class="card-body">
+  <div id="accordion">
+Loading...
+</div>
+  </div>
+  </div>  
+  </div>
+  </body>
+</html>
