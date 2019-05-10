@@ -18,6 +18,9 @@ function getTrackingFunctionByUrl(url) {
   else if (url.indexOf("rapidaocometa") != -1) {
     return rc;  
   }
+  else if (url.indexOf("transfolha") != -1) {
+   return transfolha; 
+  }
   return undefined;
 }
 
@@ -34,6 +37,7 @@ function addNewItem(itemname, itemurl) {
     return item;
   }
   catch (error) {
+    Logger.log(error);
    return undefined; 
   }
 }
@@ -74,6 +78,8 @@ function getFbInstance() {
 
 function updateEverything() {
   var items = loadAllItems();
+  if (!items)
+    return;
   for (var i = 0; i < items.length; i++) {
     var item = items[i];
     try {
@@ -87,7 +93,7 @@ function updateEverything() {
        sendEmail(upditem);
       }
     } catch (error) {
-     // Error 
+     // K 
     }
   }
   var fb = getFbInstance();
@@ -151,7 +157,7 @@ function jadlog(url) {
   var arrretorno = [];
   var data = html.split('tbody')[1];
   var array = data.split('<tr');
-  for (var i = 2; i < array.length; i++) {
+  for (var i = 1; i < array.length; i++) {
     var obj = {};
     var cols = array[i].split('<td');
     obj.date = cols[1].split('bold">')[1].split('</span>')[0];
@@ -176,6 +182,25 @@ function rc(url, item) {
       copy.lastStatus = data;
   }
   return copy;
+}
+
+function transfolha(url) {
+  var html = UrlFetchApp.fetch(url).getContentText("ISO-8859-1");
+  var arrretorno = [];
+  var data = html.split('<table')[2];
+  var array = data.split('<tr');
+  Logger.log(array);
+  for (var i = 3;  i < array.length - 2; i++) {
+    var obj = {};
+    var cols = array[i].split('<td');
+    obj.date = cols[1].split('Preto">')[1].split('</td')[0];
+    obj.status = cols[2].split('Preto">')[1].split('</td')[0] + ' (' + cols[3].split('Preto">')[1].split('</td')[0] + ')';
+    arrretorno.push(obj);
+  }
+  var item = {};
+  item.lastStatus = arrretorno[arrretorno.length - 1].status;
+  item.tracking = arrretorno;
+  return item;
 }
 
 function getTextFromHtml(html) {
