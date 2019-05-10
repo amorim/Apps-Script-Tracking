@@ -5,6 +5,7 @@ Tracking information for Brazil courier companies, using only GAS.
 * Direct Log
 * Jad Log
 * Rapidão Cometa
+* Transfolha
 
 ## Features
 * Tracks multiple orders at the same time
